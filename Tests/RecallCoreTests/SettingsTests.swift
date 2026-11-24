@@ -32,9 +32,9 @@ struct SettingsTests {
         #expect(again.shortcut.keyCode == 8)
     }
 
-    @Test func viewModeDefaultsToListAndPersists() {
+    @Test func viewModeDefaultsToExpandedAndPersists() {
         let s = Settings(defaults: defaults)
-        #expect(s.viewMode == .list)
+        #expect(s.viewMode == .expanded)
         s.viewMode = .grid
         #expect(Settings(defaults: defaults).viewMode == .grid)
     }

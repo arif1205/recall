@@ -41,4 +41,4 @@ One line per decision: what, who decided, why. Status: **decided** or **proposed
 | 35 | 2026-11-24 | A pinned clip shows in **both** History (with 📌, normal position) and Pinned | User | decided | User chose B: History always shows everything copied |
 | 36 | 2026-11-24 | Menu bar icon spins one full turn (0.3 s) each time a copy is saved; skipped when "Reduce motion" is on | User | decided | User asked for a 360° animation on copy |
 | 37 | 2026-11-24 | Panel does not focus the search box on open; typing letters still filters (type-to-search) | User | decided | User: focus on open is unwanted |
-| 38 | 2026-11-24 | View switcher right of History/Pinned: **List** (default), **Grid** (2-column cards), **Expanded** (1-column detailed cards: large image, multi-line text, source app icon, time). Choice remembered | User | decided | User request, PasteNow-style multiple layouts |
+| 38 | 2026-11-24 | View switcher right of History/Pinned: **List**, **Grid** (2-column cards), **Expanded** (default) (1-column detailed cards: large image, multi-line text, source app icon, time). Choice remembered | User | decided | User request, PasteNow-style multiple layouts |

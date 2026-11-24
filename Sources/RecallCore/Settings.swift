@@ -36,7 +36,7 @@ public final class Settings: ObservableObject {
     }
 
     public var viewMode: ViewMode {
-        get { defaults.string(forKey: "recall.viewMode").flatMap(ViewMode.init(rawValue:)) ?? .list }
+        get { defaults.string(forKey: "recall.viewMode").flatMap(ViewMode.init(rawValue:)) ?? .expanded }
         set { objectWillChange.send(); defaults.set(newValue.rawValue, forKey: "recall.viewMode") }
     }
 
