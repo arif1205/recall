@@ -14,7 +14,9 @@ final class WindowHost {
                          backing: .buffered, defer: false)
         w.title = title
         w.isReleasedWhenClosed = false
-        w.contentView = NSHostingView(rootView: view)
+        let host = NSHostingView(rootView: view)
+        w.contentView = host
+        w.setContentSize(host.fittingSize)
         w.center()
         window = w
         NSApp.activate()
@@ -93,7 +95,16 @@ struct SettingsView: View {
             }
             LabeledContent("History") {
                 HStack {
-                    TextField("", text: $limitText).frame(width: 70).onSubmit(applyLimit)
+                    TextField("", text: $limitText)
+                        .textFieldStyle(.roundedBorder)
+                        .multilineTextAlignment(.trailing)
+                        .frame(width: 70)
+                        .onSubmit(applyLimit)
+                        .accessibilityLabel("History limit")
+                    Stepper("", value: Binding(get: { Int(limitText) ?? settings.historyLimit },
+                                               set: { limitText = "\($0)"; applyLimit() }),
+                            in: 10...5000, step: 10)
+                        .labelsHidden()
                     Text("clips (10–5000, pinned not counted)").foregroundStyle(.secondary).font(.caption)
                 }
             }
