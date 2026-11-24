@@ -51,7 +51,7 @@ struct PanelView: View {
 
             gearMenu
         }
-        .padding(.horizontal, 12).padding(.top, 10).padding(.bottom, 6)
+        .padding(.horizontal, 12).padding(.top, model.detached ? 30 : 10).padding(.bottom, 6)
     }
 
     private var gearMenu: some View {

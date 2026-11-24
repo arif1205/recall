@@ -28,7 +28,9 @@ final class PanelController: NSObject, NSWindowDelegate {
         panel.appearance = NSAppearance(named: .darkAqua)
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.delegate = self
-        panel.contentView = NSHostingView(rootView: PanelView(model: model, store: model.store, settings: model.settings))
+        let host = NSHostingView(rootView: PanelView(model: model, store: model.store, settings: model.settings))
+        host.safeAreaRegions = [] // the hidden title bar would otherwise leave an empty strip at the top
+        panel.contentView = host
         model.onClose = { [weak self] in self?.hide() }
         model.onDetachChanged = { [weak self] in self?.applyMode() }
         applyMode()
