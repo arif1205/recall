@@ -8,6 +8,11 @@
 Everything you copy, one shortcut away. Nothing leaves your Mac.</p>
 
 <p align="center">
+  <a href="https://github.com/arif1205/recall/releases/latest/download/Recall.dmg"><b>⬇ Download Recall.dmg</b></a>
+  · macOS 27 · Apple Silicon
+</p>
+
+<p align="center">
   <img src="docs/screenshots/expanded.png" width="260" alt="Expanded view">
   <img src="docs/screenshots/list.png" width="260" alt="List view">
   <img src="docs/screenshots/grid.png" width="260" alt="Grid view">
@@ -40,7 +45,9 @@ Everything you copy, one shortcut away. Nothing leaves your Mac.</p>
 
 ## Install
 
-Requires macOS 27 on Apple Silicon and Xcode (Swift 6.4).
+**Download:** [Recall.dmg](https://github.com/arif1205/recall/releases/latest/download/Recall.dmg) (latest release). Open it and drag Recall into Applications. The first time, right-click Recall → Open (it is signed but not notarized).
+
+**Build from source** — requires macOS 27 on Apple Silicon and Xcode (Swift 6.4).
 
 ```sh
 git clone https://github.com/arif1205/recall.git
