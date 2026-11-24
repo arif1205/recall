@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recall Mockup</title>
+<style>
+:root{
+  --desk1:#3b2f6b;--desk2:#0f6a80;
+  --bar:rgba(30,30,36,.55);--bar-text:#f2f2f5;
+  --panel:#2b2c31;--panel-2:#34353b;--panel-3:#3d3e45;--line:#45464e;
+  --text:#ececf0;--muted:#a1a2ab;--accent:#5b6cf0;--accent-2:#1fb3d6;
+  --danger:#ff6961;--ok:#4cd964;--sel:#4a56c9;
+  --guide:#17181c;--guide-2:#202127;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--guide);color:var(--text);display:flex;font-size:13px;overflow:hidden}
+button{font:inherit;color:inherit}
+kbd{font-family:inherit;background:#33343a;border:1px solid #4a4b52;border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:11px}
+
+/* ---------- guide sidebar ---------- */
+#guide{width:300px;flex:none;background:var(--guide);border-right:1px solid #2a2b31;overflow-y:auto;padding:16px 14px 40px}
+#guide h1{font-size:16px;margin:0 0 2px}
+#guide .sub{color:var(--muted);font-size:12px;margin-bottom:14px}
+#guide h2{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 0 6px}
+#guide button.step{display:block;width:100%;text-align:left;background:var(--guide-2);border:1px solid #2c2d34;border-radius:8px;padding:7px 9px;margin:4px 0;cursor:pointer}
+#guide button.step:hover{border-color:var(--accent)}
+#guide button.step small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+#guide .ref{color:#8d93f5;font-size:10.5px}
+
+/* ---------- fake desktop ---------- */
+#desk{flex:1;position:relative;background:linear-gradient(135deg,var(--desk1),var(--desk2));overflow:hidden}
+#menubar{height:28px;background:var(--bar);backdrop-filter:blur(20px);display:flex;align-items:center;gap:16px;padding:0 14px;color:var(--bar-text);font-size:13px}
+#menubar .app{font-weight:600}
+#menubar .spacer{flex:1}
+#mbIcon{width:26px;height:22px;display:grid;place-items:center;border-radius:5px;cursor:pointer;border:0;background:none;padding:0}
+#mbIcon:hover,#mbIcon.on{background:rgba(255,255,255,.18)}
+#mbIcon.paused svg{opacity:.45}
+#frontApp{position:absolute;left:40px;top:70px;width:420px;height:300px;background:#f5f5f7;color:#222;border-radius:10px;box-shadow:0 20px 50px rgba(0,0,0,.35);overflow:hidden}
+#frontApp .tb{height:30px;background:#e6e6ea;display:flex;align-items:center;padding:0 10px;gap:6px;font-size:12px;color:#555}
+#frontApp .dot{width:11px;height:11px;border-radius:50%}
+#notes{padding:12px 14px;font-size:13px;white-space:pre-wrap;height:270px;overflow:auto;font-family:-apple-system,sans-serif}
+#notes .pasted{background:#fff3b0;border-radius:3px}
+
+/* ---------- panel ---------- */
+.panel{position:absolute;width:360px;height:560px;background:var(--panel);border:1px solid #50515a;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden}
+.panel.floating{top:34px}
+.panel.detached{top:90px;left:520px}
+.panel .titlebar{display:none;height:28px;align-items:center;gap:7px;padding:0 12px}
+.panel.detached .titlebar{display:flex}
+.tl{width:12px;height:12px;border-radius:50%;border:0;cursor:pointer}
+.head{display:flex;align-items:center;gap:8px;padding:10px 12px 6px}
+.iconbtn{width:28px;height:28px;border-radius:7px;border:0;background:none;display:grid;place-items:center;cursor:pointer;color:var(--muted)}
+.iconbtn:hover{background:var(--panel-3);color:var(--text)}
+.iconbtn.active{color:var(--accent-2)}
+.search{flex:1;display:flex;align-items:center;gap:6px;background:#1f2024;border:1px solid #3c3d44;border-radius:8px;padding:5px 8px}
+.search input{flex:1;background:none;border:0;outline:0;color:var(--text);font-size:13px}
+.tabs{display:flex;gap:4px;padding:2px 12px 8px;border-bottom:1px solid var(--line)}
+.tab{border:0;background:none;padding:4px 10px;border-radius:6px;cursor:pointer;color:var(--muted);font-weight:500}
+.tab.on{background:var(--panel-3);color:var(--text)}
+.list{flex:1;overflow-y:auto;padding:6px}
+.row{display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:8px;cursor:default;position:relative}
+.row:hover{background:var(--panel-2)}
+.row.sel{background:var(--sel)}
+.ticon{width:28px;height:28px;flex:none;border-radius:6px;background:var(--panel-3);display:grid;place-items:center;color:#c9cbe0;overflow:hidden}
+.swatch{width:18px;height:18px;border-radius:50%;border:1px solid rgba(255,255,255,.4)}
+.thumb{width:28px;height:28px;border-radius:6px}
+.rtext{flex:1;min-width:0}
+.rtext .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rtext .m{color:var(--muted);font-size:11px;margin-top:1px}
+.row.sel .rtext .m{color:#d6d9ff}
+.pin{font-size:11px}
+.empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:8px;text-align:center}
+.foot{height:34px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+.hint{font-size:11px;color:var(--muted);padding:0 12px 6px}
+
+/* ---------- menus ---------- */
+.menu{position:absolute;min-width:230px;background:rgba(44,45,51,.97);border:1px solid #55565f;border-radius:9px;box-shadow:0 14px 40px rgba(0,0,0,.5);padding:5px;z-index:50;font-size:13px}
+.mi{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 24px;border-radius:5px;cursor:default;position:relative;white-space:nowrap}
+.mi:hover:not(.dis){background:var(--accent);color:#fff}
+.mi .ck{position:absolute;left:8px}
+.mi .sc{margin-left:auto;color:var(--muted);padding-left:24px}
+.mi:hover .sc{color:#e8e9ff}
+.mi.dis{color:#6f7078}
+.sep{height:1px;background:#4b4c54;margin:4px 6px}
+.sub{display:none;position:absolute;left:100%;top:-6px}
+.mi:hover>.sub{display:block}
+
+/* ---------- windows / dialogs ---------- */
+.win{position:absolute;background:#2d2e33;border:1px solid #55565f;border-radius:12px;box-shadow:0 24px 60px rgba(0,0,0,.55);z-index:60;overflow:hidden}
+.win .wt{height:30px;display:flex;align-items:center;justify-content:center;position:relative;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line)}
+.win .wt .tls{position:absolute;left:12px;display:flex;gap:7px}
+.win .wb{padding:16px 18px}
+.field{display:flex;align-items:center;gap:10px;margin:10px 0}
+.field label{width:90px;text-align:right;color:var(--muted)}
+.btn{background:#4a4b53;border:1px solid #5a5b63;border-radius:6px;padding:4px 12px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{background:#5a2a2a;border-color:#8a3b3b;color:#ffb4ae}
+.rec{min-width:110px;text-align:center;background:#1f2024;border:1px solid #3c3d44;border-radius:6px;padding:4px 10px;cursor:pointer}
+.rec.recording{border-color:var(--accent);color:var(--accent-2)}
+.warn{color:#ffb35c;font-size:12px;margin-left:100px;min-height:16px}
+input[type=number]{width:80px;background:#1f2024;border:1px solid #3c3d44;border-radius:6px;color:var(--text);padding:4px 6px}
+textarea{width:100%;height:170px;background:#1f2024;border:1px solid #3c3d44;border-radius:8px;color:var(--text);padding:8px;font:13px ui-monospace,Menlo,monospace;resize:none}
+.alert{width:300px;left:50%;top:150px;transform:translateX(-50%);text-align:center}
+.alert .wb{padding:20px}
+.alert .ai{margin:0 auto 10px;width:56px;height:56px}
+.alert h3{margin:0 0 6px;font-size:14px}
+.alert p{margin:0 0 14px;color:var(--muted);font-size:12px}
+.alert .btns{display:flex;gap:8px;justify-content:center}
+
+#toast{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);background:rgba(20,20,24,.92);border:1px solid #4a4b52;border-radius:10px;padding:8px 14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:99;max-width:80%}
+#toast.show{opacity:1}
+#quit{position:absolute;inset:28px 0 0 0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:#fff;z-index:40}
+.hidden{display:none!important}
+
+@media (max-width:760px){
+  body{flex-direction:column;overflow:auto}
+  #guide{width:auto;max-height:40vh;border-right:0;border-bottom:1px solid #2a2b31}
+  #desk{min-height:640px}
+  #frontApp{display:none}
+  .panel{width:calc(100% - 32px)!important;left:16px!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= GUIDE ================= -->
+<aside id="guide">
+  <h1>Recall — mockup</h1>
+  <div class="sub">Clickable preview of every screen in <b>design.md</b>. Nothing here touches your real clipboard. Refs like <span class="ref">#27</span> point to decisions.md.</div>
+
+  <h2>Open &amp; close</h2>
+  <button class="step" data-do="openIcon">Click the menu bar icon<small>Panel opens under the clipboard icon · <span class="ref">#25</span></small></button>
+  <button class="step" data-do="openKey">Press <kbd>⌘</kbd><kbd>⇧</kbd><kbd>V</kbd><small>Same panel, from any app. Press again or Esc to close · <span class="ref">#27 #28</span></small></button>
+  <button class="step" data-do="detach">Detach into a window<small>📌 button keeps it open as a normal window · <span class="ref">#2</span></small></button>
+
+  <h2>Copy things (simulated)</h2>
+  <button class="step" data-copy="text">Copy plain text</button>
+  <button class="step" data-copy="rich">Copy rich text (from a web page)</button>
+  <button class="step" data-copy="md">Copy Markdown</button>
+  <button class="step" data-copy="code">Copy code</button>
+  <button class="step" data-copy="link">Copy a link</button>
+  <button class="step" data-copy="color">Copy a colour code</button>
+  <button class="step" data-copy="image">Copy an image (screenshot)</button>
+  <button class="step" data-copy="file">Copy a file in Finder</button>
+  <button class="step" data-copy="other">Copy something unknown (Figma shape)</button>
+  <button class="step" data-copy="dup">Copy the same text again<small>Existing clip moves to top, no duplicate · <span class="ref">#19</span></small></button>
+  <button class="step" data-copy="password">Copy a password from 1Password<small>Never saved · <span class="ref">#8</span></small></button>
+  <button class="step" data-copy="big">Copy a 30 MB image<small>Skipped, over 25 MB · <span class="ref">#14</span></small></button>
+
+  <h2>Use a clip</h2>
+  <button class="step" data-do="hintKeys">Keyboard in the panel<small>Type to search · ↑ ↓ · Enter paste · ⇧Enter plain · ⌘C ⌘E ⌘P · Delete · Esc</small></button>
+  <button class="step" data-do="ctx">Right-click a clip<small>Paste · Paste as Plain Text · Copy · Edit… · Pin · Delete · <span class="ref">#22</span></small></button>
+  <button class="step" data-do="edit">Edit a text clip<small>Text clips only · <span class="ref">#23</span></small></button>
+  <button class="step" data-do="pinTab">Pinned tab<small>Pinned clips show in both tabs · <span class="ref">#35</span></small></button>
+
+  <h2>Gear menu &amp; settings</h2>
+  <button class="step" data-do="gear">Open the gear menu<small>Monitoring, interval, Settings, Start at Login, About, Quit</small></button>
+  <button class="step" data-do="stopMon">Stop monitoring<small>Icon dims; copies aren't saved</small></button>
+  <button class="step" data-do="settings">Settings window<small>Shortcut · History limit · Start at Login · Clear All · <span class="ref">#15 #29 #32</span></small></button>
+  <button class="step" data-do="lower">Lower the history limit<small>Asks before deleting · <span class="ref">#17</span></small></button>
+  <button class="step" data-do="clear">Clear all history<small>Pinned clips kept · <span class="ref">#33</span></small></button>
+
+  <h2>First run</h2>
+  <button class="step" data-do="firstRun">Accessibility permission prompt<small>Needed only for auto-paste</small></button>
+  <button class="step" data-do="noAx">Paste without permission<small>Clip copied, hint to press ⌘V</small></button>
+  <button class="step" data-do="emptyState">Empty history<small>"No clips yet"</small></button>
+  <button class="step" data-do="reset">Reset the mockup</button>
+</aside>
+
+<!-- ================= DESKTOP ================= -->
+<main id="desk">
+  <div id="menubar">
+    <span>&#63743;</span><span class="app">Notes</span><span>File</span><span>Edit</span><span>Format</span>
+    <span class="spacer"></span>
+    <span>☀ 28°C</span>
+    <button id="mbIcon" title="Recall" aria-label="Recall menu bar icon">
+      <svg width="16" height="16" viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.6"><rect x="4" y="2.2" width="10" height="13" rx="2.2"/><rect x="6.4" y="1.4" width="5.2" height="3" rx="1" fill="#fff" stroke="none"/></svg>
+    </button>
+    <span>🔍</span><span>Tue 24 Nov 3:40 PM</span>
+  </div>
+
+  <div id="frontApp">
+    <div class="tb"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>&nbsp; Notes — the app you were in</div>
+    <div id="notes" contenteditable="true">Pasted clips land here.
+</div>
+  </div>
+
+  <section id="panel" class="panel floating hidden" aria-label="Recall panel">
+    <div class="titlebar"><button class="tl" style="background:#ff5f57" data-act="close" aria-label="Close"></button><span class="tl" style="background:#febc2e"></span><span class="tl" style="background:#28c840"></span></div>
+    <div class="head">
+      <button class="iconbtn" id="pinWin" title="Keep open as a window" aria-label="Detach">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4h6l-1 6 3 3H7l3-3z"/><path d="M12 13v7"/></svg>
+      </button>
+      <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9a9ba3" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" placeholder="Type to Search..." aria-label="Search clips"></div>
+      <button class="iconbtn" id="gearBtn" title="Menu" aria-label="Gear menu">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="history" role="tab">History</button>
+      <button class="tab" data-tab="pinned" role="tab">Pinned</button>
+    </div>
+    <div id="axHint" class="hint hidden">Recall can't paste for you yet — clips are copied, press ⌘V. <a href="#" id="axFix" style="color:var(--accent-2)">Allow</a></div>
+    <div class="list" id="list" role="listbox" tabindex="0"></div>
+    <div class="foot" id="foot">0 items</div>
+  </section>
+
+  <div id="quit"><div style="font-size:15px">Recall has quit — the menu bar icon is gone.</div><button class="btn primary" id="relaunch">Open Recall again</button></div>
+  <div id="toast" role="status"></div>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const desk = $('#desk'), panel = $('#panel'), list = $('#list');
+
+const ICONS = {
+  text:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+  rich:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V5h12v2M10 5v14M7 19h6M15 13h6M18 13v6"/></svg>',
+  md:'<b style="font-size:15px">#</b>',
+  code:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg>',
+  link:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg>',
+  other:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>',
+  file:'<svg width="20" height="22" viewBox="0 0 20 22"><path d="M3 1h9l5 5v15H3z" fill="#fff"/><path d="M12 1v5h5" fill="#d7dbe6"/><rect x="5" y="13" width="10" height="5" rx="1" fill="#e5484d"/><text x="10" y="17.2" font-size="4" fill="#fff" text-anchor="middle" font-family="sans-serif" font-weight="700">PDF</text></svg>'
+};
+const LABEL = {text:'Text',rich:'Rich text',md:'Markdown',code:'Code',link:'Link',color:'Colour',image:'Image',file:'File',other:'Other'};
+
+const SAMPLES = {
+  text:{type:'text',text:'Meeting moved to Thursday 3 PM — bring the budget sheet.'},
+  rich:{type:'rich',text:'Recall keeps the formatting of rich text.',rich:true},
+  md:{type:'md',text:'## Release notes\n- Faster search\n- [Docs](https://example.com)'},
+  code:{type:'code',text:'const clips = store.recent(200).filter(c => !c.concealed)'},
+  link:{type:'link',text:'https://github.com/apple/swift'},
+  color:{type:'color',text:'#FF5733'},
+  image:{type:'image',text:'Screenshot 2026-11-24 at 15.42',meta:'1440×900 · 412 KB'},
+  file:{type:'file',text:'report-q4.pdf',meta:'~/Documents/Reports'},
+  other:{type:'other',text:'Figma shape (com.figma.clipboard)',meta:'Pastes back into Figma exactly'}
+};
+
+let S, nextId, recorderOn = false;
+function initState(){
+  nextId = 1;
+  S = {
+    clips:[], tab:'history', sel:0, q:'', open:false, detached:false,
+    monitoring:true, interval:'0.5 s', login:true, limit:200, ax:true,
+    shortcut:{meta:true,shift:true,ctrl:false,alt:false,key:'V'}, quit:false
+  };
+  const now = Date.now();
+  ['link','code','color','text','image','md','file','rich'].forEach((k,i)=>{
+    S.clips.push({...SAMPLES[k], id:nextId++, t:now - (i+1)*7*60000, pinned:k==='code'||k==='color'});
+  });
+}
+initState();
+
+/* ---------- helpers ---------- */
+function toast(msg){const t=$('#toast');t.innerHTML=msg;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),2600)}
+function scText(s){return (s.ctrl?'⌃':'')+(s.alt?'⌥':'')+(s.shift?'⇧':'')+(s.meta?'⌘':'')+s.key}
+function ago(t){const m=Math.round((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min ago':Math.round(m/60)+' h ago'}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function closeMenus(){document.querySelectorAll('.menu').forEach(m=>m.remove())}
+function closeWins(){document.querySelectorAll('.win').forEach(w=>w.remove())}
+
+function visible(){
+  const q=S.q.toLowerCase();
+  return S.clips
+    .filter(c=>S.tab==='history'||c.pinned)
+    .filter(c=>!q||c.text.toLowerCase().includes(q)||(c.meta||'').toLowerCase().includes(q))
+    .sort((a,b)=>b.t-a.t);
+}
+
+function iconFor(c){
+  if(c.type==='color') return `<div class="ticon"><span class="swatch" style="background:${c.text}"></span></div>`;
+  if(c.type==='image') return `<div class="ticon"><span class="thumb" style="background:linear-gradient(135deg,#7f8cff,#29c3e0 60%,#ffd36b)"></span></div>`;
+  return `<div class="ticon">${ICONS[c.type]}</div>`;
+}
+
+function render(){
+  $('#mbIcon').classList.toggle('paused',!S.monitoring);
+  $('#mbIcon').classList.toggle('on',S.open && !S.detached);
+  $('#quit').style.display=S.quit?'flex':'none';
+  $('#mbIcon').style.visibility=S.quit?'hidden':'visible';
+  panel.classList.toggle('hidden',!S.open);
+  panel.classList.toggle('floating',!S.detached);
+  panel.classList.toggle('detached',S.detached);
+  $('#pinWin').classList.toggle('active',S.detached);
+  if(!S.detached){const r=$('#mbIcon').getBoundingClientRect(),d=desk.getBoundingClientRect();panel.style.left=Math.max(16,Math.min(r.left-d.left-160,d.width-376))+'px'}
+  else panel.style.left='';
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.tab));
+  $('#axHint').classList.toggle('hidden',S.ax);
+  const v=visible();
+  if(S.sel>=v.length) S.sel=Math.max(0,v.length-1);
+  if(!v.length){
+    const msg=S.q?`No clips match “${esc(S.q)}”`:S.tab==='pinned'?'No pinned clips yet<br><small>Right-click a clip → Pin</small>':'No clips yet<br><small>Copy something and it shows up here</small>';
+    list.innerHTML=`<div class="empty"><svg width="44" height="44" viewBox="0 0 18 18" fill="none" stroke="#6d6e76" stroke-width="1.2"><rect x="4" y="2.2" width="10" height="13" rx="2.2"/><rect x="6.4" y="1.4" width="5.2" height="3" rx="1" fill="#6d6e76" stroke="none"/></svg><div>${msg}</div></div>`;
+  } else {
+    list.innerHTML=v.map((c,i)=>`<div class="row${i===S.sel?' sel':''}" data-id="${c.id}" role="option" aria-selected="${i===S.sel}">
+      ${iconFor(c)}
+      <div class="rtext"><div class="t">${esc(c.text.split('\n')[0])}</div><div class="m">${LABEL[c.type]}${c.meta?' · '+esc(c.meta):''} · ${ago(c.t)}</div></div>
+      ${c.pinned&&S.tab==='history'?'<span class="pin" title="Pinned">📌</span>':''}
+    </div>`).join('');
+  }
+  $('#foot').textContent=`${v.length} item${v.length===1?'':'s'}`;
+  const selRow=list.querySelector('.row.sel'); if(selRow) selRow.scrollIntoView({block:'nearest'});
+}
+
+/* ---------- open / close ---------- */
+function openPanel(){ if(S.quit) return; S.open=true; render(); $('#q').focus(); }
+function closePanel(){ S.open=false; S.detached=false; S.q=''; $('#q').value=''; closeMenus(); render(); }
+function togglePanel(){ S.open&&!S.detached?closePanel():openPanel(); }
+
+/* ---------- clipboard simulation ---------- */
+function trim(){
+  const unpinned=S.clips.filter(c=>!c.pinned).sort((a,b)=>b.t-a.t);
+  const drop=unpinned.slice(S.limit).map(c=>c.id);
+  S.clips=S.clips.filter(c=>!drop.includes(c.id));
+  return drop.length;
+}
+function copy(kind){
+  if(S.quit) return toast('Recall is not running — nothing saved');
+  if(!S.monitoring) return toast('Monitoring is stopped — copy <b>not saved</b>');
+  if(kind==='password') return toast('🔒 Copied from 1Password — marked concealed, <b>not saved</b>');
+  if(kind==='big') return toast('Image is 30 MB — over the 25 MB limit, <b>skipped</b>');
+  if(kind==='dup'){
+    const c=S.clips.find(x=>x.type==='text')||S.clips[0];
+    if(!c) return toast('Nothing to repeat yet');
+    c.t=Date.now(); toast(`Copied “${esc(c.text.slice(0,28))}…” again — moved to top, no duplicate`);
+  } else {
+    const s=SAMPLES[kind], ex=S.clips.find(c=>c.text===s.text);
+    if(ex){ex.t=Date.now();toast('Already in history — moved to top')}
+    else {S.clips.push({...s,id:nextId++,t:Date.now(),pinned:false});toast(`Saved ${LABEL[kind].toLowerCase()}: “${esc(s.text.split('\n')[0].slice(0,34))}”`)}
+  }
+  trim(); S.tab='history'; S.sel=0; if(!S.open) openPanel(); else render();
+}
+
+/* ---------- actions on a clip ---------- */
+const byId=id=>S.clips.find(c=>c.id===+id);
+function selected(){return visible()[S.sel]}
+function paste(c,plain){
+  if(!c) return;
+  c.t=Date.now();
+  const txt=c.type==='image'?'[image]':c.type==='file'?`[file: ${c.text}]`:c.type==='other'?'[Figma shape]':c.text;
+  if(!S.ax){ toast(`Copied${plain?' as plain text':''} — press <kbd>⌘</kbd><kbd>V</kbd> to paste (Recall needs Accessibility to paste for you)`); render(); return; }
+  const n=$('#notes'); n.innerHTML+=`<span class="pasted">${esc(txt)}</span>\n`; setTimeout(()=>n.querySelectorAll('.pasted').forEach(s=>s.classList.remove('pasted')),1500);
+  toast(`Pasted${plain?' as plain text':''} into Notes`);
+  if(!S.detached) closePanel(); else {S.sel=0; render();}
+}
+function copyOnly(c){ if(!c) return; c.t=Date.now(); S.sel=0; toast('Copied to clipboard — not pasted'); render(); }
+function togglePin(c){ if(!c) return; c.pinned=!c.pinned; toast(c.pinned?'Pinned — shows in History (📌) and Pinned':'Unpinned'); render(); }
+function del(c){ if(!c) return; S.clips=S.clips.filter(x=>x!==c); toast('Deleted'); render(); }
+const editable=c=>c&&['text','rich','md','code','link','color'].includes(c.type);
+
+function ctxMenu(c,x,y){
+  closeMenus();
+  const m=document.createElement('div'); m.className='menu';
+  const item=(label,sc,fn,dis)=>`<div class="mi${dis?' dis':''}" data-f="${fn}">${label}<span class="sc">${sc}</span></div>`;
+  m.innerHTML=item('Paste','↩','paste')+(c.rich?item('Paste as Plain Text','⇧↩','plain'):'')+item('Copy','⌘C','copy')+
+    '<div class="sep"></div>'+item('Edit…','⌘E','edit',!editable(c))+item(c.pinned?'Unpin':'Pin','⌘P','pin')+
+    '<div class="sep"></div>'+item('Delete','⌫','del');
+  const d=desk.getBoundingClientRect();
+  m.style.left=Math.min(x-d.left,d.width-240)+'px'; m.style.top=Math.min(y-d.top,d.height-220)+'px';
+  m.onclick=e=>{const it=e.target.closest('.mi');if(!it||it.classList.contains('dis'))return;closeMenus();
+    ({paste:()=>paste(c),plain:()=>paste(c,true),copy:()=>copyOnly(c),edit:()=>editWin(c),pin:()=>togglePin(c),del:()=>del(c)})[it.dataset.f]()};
+  desk.appendChild(m);
+}
+
+/* ---------- gear menu ---------- */
+function gearMenu(){
+  closeMenus();
+  const m=document.createElement('div'); m.className='menu';
+  const iv=['0.25 s','0.5 s','1 s','2 s'].map(v=>`<div class="mi" data-iv="${v}">${S.interval===v?'<span class="ck">✓</span>':''}${v}${v==='0.5 s'?' (default)':''}</div>`).join('');
+  m.innerHTML=`<div class="mi" data-g="mon">${S.monitoring?'Stop':'Start'} Monitoring Clipboard</div>
+    <div class="mi">Clipboard Monitoring Interval<span class="sc">›</span><div class="menu sub">${iv}</div></div>
+    <div class="sep"></div>
+    <div class="mi" data-g="settings">Settings…<span class="sc">⌘,</span></div>
+    <div class="mi" data-g="login">${S.login?'<span class="ck">✓</span>':''}Start at Login</div>
+    <div class="sep"></div>
+    <div class="mi" data-g="about">About Recall</div>
+    <div class="mi" data-g="quit">Quit Recall<span class="sc">⌘Q</span></div>`;
+  const r=$('#gearBtn').getBoundingClientRect(),d=desk.getBoundingClientRect();
+  m.style.left=Math.min(r.left-d.left,d.width-250)+'px'; m.style.top=(r.bottom-d.top+4)+'px';
+  m.onclick=e=>{
+    const iv=e.target.closest('[data-iv]'); if(iv){S.interval=iv.dataset.iv;closeMenus();toast(`Checks the clipboard every ${S.interval}`);return}
+    const g=e.target.closest('[data-g]'); if(!g) return; closeMenus();
+    ({mon:()=>{S.monitoring=!S.monitoring;toast(S.monitoring?'Monitoring started':'Monitoring stopped — menu bar icon dimmed, copies not saved');render()},
+      settings:settingsWin,
+      login:()=>{S.login=!S.login;toast(S.login?'Recall will start at login':'Recall won’t start at login')},
+      about:()=>alertBox('About Recall','Version 1.0 · personal build<br>Clipboard history that stays on this Mac.',[['OK','primary']]),
+      quit:()=>{S.quit=true;closePanel();closeWins()}})[g.dataset.g]();
+  };
+  desk.appendChild(m);
+}
+
+/* ---------- windows ---------- */
+function win(title,w,html,left,top){
+  closeWins();
+  const el=document.createElement('div'); el.className='win';
+  el.style.width=w+'px'; el.style.left=(left??Math.max(16,(desk.clientWidth-w)/2))+'px'; el.style.top=(top??80)+'px';
+  el.innerHTML=`<div class="wt"><div class="tls"><button class="tl" style="background:#ff5f57" data-x aria-label="Close"></button><span class="tl" style="background:#febc2e"></span><span class="tl" style="background:#28c840"></span></div>${title}</div><div class="wb">${html}</div>`;
+  el.querySelector('[data-x]').onclick=()=>el.remove();
+  desk.appendChild(el); return el;
+}
+function alertBox(title,body,buttons,onPick,icon){
+  const el=document.createElement('div'); el.className='win alert';
+  el.innerHTML=`<div class="wb">${icon||'<img class="ai" alt="" src="../assets/AppIcon-1024.png" onerror="this.remove()">'}<h3>${title}</h3><p>${body}</p><div class="btns">${buttons.map(([l,c],i)=>`<button class="btn ${c||''}" data-i="${i}">${l}</button>`).join('')}</div></div>`;
+  el.onclick=e=>{const b=e.target.closest('[data-i]');if(!b)return;el.remove();onPick&&onPick(+b.dataset.i)};
+  desk.appendChild(el); return el;
+}
+
+function editWin(c){
+  if(!editable(c)) return toast('Only text clips can be edited');
+  const el=win('Edit Clip',420,`<textarea id="edTxt"></textarea>
+    ${c.rich?'<div style="color:#ffb35c;font-size:12px;margin-top:6px">Saving turns this rich text into plain text.</div>':''}
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn" data-c>Cancel</button><button class="btn primary" data-s>Save</button></div>`);
+  el.querySelector('#edTxt').value=c.text; el.querySelector('#edTxt').focus();
+  el.querySelector('[data-c]').onclick=()=>el.remove();
+  el.querySelector('[data-s]').onclick=()=>{c.text=el.querySelector('#edTxt').value;if(c.rich){c.rich=false;c.type='text'}el.remove();toast('Clip saved — position unchanged');render()};
+}
+
+function settingsWin(){
+  const el=win('Recall Settings',440,`
+    <div class="field"><label>Shortcut</label><button class="rec" id="rec">${scText(S.shortcut)}</button><button class="btn" id="recReset">Reset to ⌘⇧V</button></div>
+    <div class="warn" id="recWarn"></div>
+    <div class="field"><label>History</label><input type="number" id="lim" min="10" max="5000" value="${S.limit}"> clips <span style="color:var(--muted);font-size:11px">(10–5000, pinned not counted)</span></div>
+    <div class="field"><label></label><label style="width:auto;color:var(--text);display:flex;gap:6px;align-items:center"><input type="checkbox" id="login" ${S.login?'checked':''}> Start at Login</label></div>
+    <div class="field"><label></label><button class="btn danger" id="clr">Clear All History…</button></div>`,undefined,60);
+  const rec=el.querySelector('#rec'),warn=el.querySelector('#recWarn');
+  rec.onclick=()=>{recorderOn=true;rec.classList.add('recording');rec.textContent='Press new keys…';warn.textContent=''};
+  rec.onkeydown=e=>{
+    if(!recorderOn) return; e.preventDefault(); e.stopPropagation();
+    if(['Meta','Shift','Control','Alt'].includes(e.key)) return;
+    const s={meta:e.metaKey,shift:e.shiftKey,ctrl:e.ctrlKey,alt:e.altKey,key:e.key.length===1?e.key.toUpperCase():e.key};
+    recorderOn=false; rec.classList.remove('recording');
+    if(!s.meta&&!s.ctrl&&!s.alt){warn.textContent='Needs ⌘, ⌃ or ⌥ — a plain key would block typing. Kept '+scText(S.shortcut)+'.';rec.textContent=scText(S.shortcut);return}
+    const taken={'⌘ ':'Spotlight','⇧⌘3':'Screenshot','⇧⌘4':'Screenshot','⌘Q':'Quit','⌘C':'Copy','⌘V':'Paste'}[scText(s)];
+    if(taken){warn.textContent=`${scText(s)} is already used by ${taken}. Kept ${scText(S.shortcut)}.`;rec.textContent=scText(S.shortcut);return}
+    S.shortcut=s; rec.textContent=scText(s); toast(`Shortcut is now ${scText(s)}`);
+  };
+  el.querySelector('#recReset').onclick=()=>{S.shortcut={meta:true,shift:true,ctrl:false,alt:false,key:'V'};rec.textContent='⇧⌘V';warn.textContent=''};
+  const lim=el.querySelector('#lim');
+  lim.onchange=()=>{
+    const v=Math.max(10,Math.min(5000,parseInt(lim.value)||200)); lim.value=v;
+    const unpinned=S.clips.filter(c=>!c.pinned).length, over=unpinned-v;
+    if(over>0) alertBox('Lower the history limit?',`This will delete <b>${over}</b> older clip${over>1?'s':''}. Pinned clips are kept.`,[['Cancel'],['Delete '+over,'danger']],i=>{if(i===1){S.limit=v;trim();render();toast(`Limit is ${v}`)}else lim.value=S.limit});
+    else {S.limit=v;toast(`Keeps the last ${v} clips`)}
+  };
+  el.querySelector('#login').onchange=e=>{S.login=e.target.checked};
+  el.querySelector('#clr').onclick=clearAll;
+  return el;
+}
+function clearAll(){
+  const n=S.clips.filter(c=>!c.pinned).length;
+  alertBox('Clear all history?',`Deletes ${n} clip${n===1?'':'s'}. Pinned clips are kept. This can’t be undone.`,[['Cancel'],['Clear All','danger']],i=>{if(i===1){S.clips=S.clips.filter(c=>c.pinned);render();toast('History cleared — pinned clips kept')}});
+}
+
+/* ---------- events ---------- */
+$('#mbIcon').onclick=e=>{e.stopPropagation();if(S.detached){openPanel();return}togglePanel()};
+$('#gearBtn').onclick=e=>{e.stopPropagation();document.querySelector('.menu')?closeMenus():gearMenu()};
+$('#pinWin').onclick=()=>{S.detached=!S.detached;toast(S.detached?'Detached — stays open as a window':'Back to the floating panel');render()};
+panel.querySelector('[data-act=close]').onclick=closePanel;
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.sel=0;render()});
+$('#q').oninput=e=>{S.q=e.target.value;S.sel=0;render()};
+list.onclick=e=>{const r=e.target.closest('.row');if(!r)return;S.sel=visible().findIndex(c=>c.id===+r.dataset.id);render()};
+list.ondblclick=e=>{const r=e.target.closest('.row');if(r)paste(byId(r.dataset.id))};
+list.oncontextmenu=e=>{const r=e.target.closest('.row');if(!r)return;e.preventDefault();S.sel=visible().findIndex(c=>c.id===+r.dataset.id);render();ctxMenu(byId(r.dataset.id),e.clientX,e.clientY)};
+$('#axFix').onclick=e=>{e.preventDefault();firstRun()};
+$('#relaunch').onclick=()=>{S.quit=false;render();toast('Recall is running again')};
+document.addEventListener('click',e=>{if(!e.target.closest('.menu'))closeMenus()});
+
+function matchShortcut(e){const s=S.shortcut;return e.metaKey===s.meta&&e.shiftKey===s.shift&&e.ctrlKey===s.ctrl&&e.altKey===s.alt&&(e.key.length===1?e.key.toUpperCase():e.key)===s.key}
+document.addEventListener('keydown',e=>{
+  if(recorderOn) return;
+  if(matchShortcut(e)){e.preventDefault();togglePanel();return}
+  if(!S.open||document.querySelector('.win')) return;
+  const c=selected(), v=visible();
+  if(e.key==='Escape'){e.preventDefault(); document.querySelector('.menu')?closeMenus():closePanel(); return}
+  if(e.key==='ArrowDown'){e.preventDefault();S.sel=Math.min(v.length-1,S.sel+1);render();return}
+  if(e.key==='ArrowUp'){e.preventDefault();S.sel=Math.max(0,S.sel-1);render();return}
+  if(e.key==='Enter'){e.preventDefault();paste(c,e.shiftKey&&c&&c.rich);return}
+  if(e.metaKey&&e.key.toLowerCase()==='c'&&!window.getSelection().toString()){e.preventDefault();copyOnly(c);return}
+  if(e.metaKey&&e.key.toLowerCase()==='e'){e.preventDefault();editWin(c);return}
+  if(e.metaKey&&e.key.toLowerCase()==='p'){e.preventDefault();togglePin(c);return}
+  if(e.metaKey&&e.key===','){e.preventDefault();settingsWin();return}
+  if((e.key==='Backspace'||e.key==='Delete')&&!S.q){e.preventDefault();del(c);return}
+});
+
+function firstRun(){
+  alertBox('Let Recall paste for you',
+    'To paste a clip straight into the app you were using, allow Recall in<br><b>System Settings → Privacy &amp; Security → Accessibility</b>.<br>Without it, Recall copies the clip and you press ⌘V.',
+    [['Later'],['Open System Settings','primary']],
+    i=>{S.ax=i===1;toast(S.ax?'Accessibility allowed — Recall can paste for you':'Skipped — clips are copied, press ⌘V');render()});
+}
+
+/* ---------- guide ---------- */
+const GUIDE={
+  openIcon:()=>{closeWins();S.detached=false;openPanel();toast('Panel opens under the menu bar icon')},
+  openKey:()=>{closeWins();S.detached=false;openPanel();toast(`Opened with <kbd>${scText(S.shortcut)}</kbd> — press it again or Esc to close`)},
+  detach:()=>{openPanel();S.detached=true;render();toast('Detached — stays open as a window. Enter still pastes into Notes')},
+  hintKeys:()=>{openPanel();toast('Try: type “http” · ↑ ↓ · Enter · ⇧Enter on rich text · ⌘E · ⌘P · Delete · Esc')},
+  ctx:()=>{openPanel();setTimeout(()=>{const r=list.querySelector('.row');if(!r)return;const b=r.getBoundingClientRect();S.sel=0;render();ctxMenu(visible()[0],b.left+120,b.top+20)},50)},
+  edit:()=>{openPanel();const c=visible().find(editable);if(c)editWin(c)},
+  pinTab:()=>{openPanel();S.tab='pinned';S.sel=0;render();toast('Pinned clips also stay in History with a 📌')},
+  gear:()=>{openPanel();setTimeout(gearMenu,30)},
+  stopMon:()=>{openPanel();S.monitoring=false;render();toast('Monitoring stopped — icon dimmed. Try a “Copy …” button: nothing is saved')},
+  settings:()=>{openPanel();settingsWin()},
+  lower:()=>{openPanel();const el=settingsWin();const lim=el.querySelector('#lim');lim.value=10;lim.onchange()},
+  clear:()=>{openPanel();clearAll()},
+  firstRun:()=>{closeWins();firstRun()},
+  noAx:()=>{S.ax=false;openPanel();toast('Accessibility not allowed — press Enter on a clip to see what happens')},
+  emptyState:()=>{S.clips=[];S.q='';$('#q').value='';S.tab='history';openPanel()},
+  reset:()=>{closeWins();closeMenus();initState();$('#notes').textContent='Pasted clips land here.\n';$('#q').value='';render();toast('Mockup reset')}
+};
+document.querySelectorAll('[data-do]').forEach(b=>b.onclick=e=>{e.stopPropagation();closeMenus();GUIDE[b.dataset.do]()});
+document.querySelectorAll('[data-copy]').forEach(b=>b.onclick=e=>{e.stopPropagation();copy(b.dataset.copy)});
+window.addEventListener('resize',render);
+render();
+</script>
+</body>
+</html>
