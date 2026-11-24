@@ -62,7 +62,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func spinIcon() {
         guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
               spinTimer == nil, let button = statusItem.button, let base = button.image else { return }
-        let frames = 24, duration = 0.5
+        let frames = 18, duration = 0.3
         var i = 0
         spinTimer = Timer.scheduledTimer(withTimeInterval: duration / Double(frames), repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
