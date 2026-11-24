@@ -264,3 +264,11 @@ User chose **B** for pinned clips: they stay in History (marked 📌) and also s
 User asked for a local HTML mockup of every screen and action from design.md: `docs/mockup.html`
 (open in a browser). Left side lists each screen/action; right side is a fake Mac desktop with the
 menu bar icon, panel, menus, Settings and dialogs. Simulated only; it never touches the real clipboard.
+
+## 2026-11-24 — v1 built and installed
+
+Built per plan, installed to `/Applications/Recall.app`, signed with Apple Development. 38 tests pass.
+Final code review: 3 important fixes applied (detached-window paste target, ⌫ key-repeat delete, unpin at limit),
+plus unreadable index no longer overwritten. Deferred minors: orphan data after index recovery, previous app not
+re-activated after Edit → Save, silent hotkey conflict at launch, no notice for missing files, duplicate content
+after edit, thumbnails decoded on main thread. User confirmed the menu bar icon is visible.
