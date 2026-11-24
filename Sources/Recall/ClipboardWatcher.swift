@@ -9,6 +9,7 @@ final class ClipboardWatcher {
     private let pasteboard: NSPasteboard
     private var tracker = ChangeTracker()
     private var timer: Timer?
+    var onSaved: () -> Void = {}
 
     init(store: ClipStore, settings: Settings, pasteboard: NSPasteboard = .general) {
         self.store = store
@@ -35,6 +36,7 @@ final class ClipboardWatcher {
         let source = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
         if case .clip(let draft) = PasteboardReader.read(pasteboard, sourceBundleID: source) {
             store.add(draft)
+            onSaved()
         }
     }
 }

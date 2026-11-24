@@ -42,6 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return w.convertToScreen(b.convert(b.bounds, to: nil))
         }
         monitoringChanged()
+        watcher.onSaved = { [weak self] in self?.spinIcon() }
 
         hotkey.onPress = { [weak self] in self?.panel.toggle() }
         _ = hotkey.register(settings.shortcut)
@@ -54,6 +55,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func iconClicked() { panel.toggle() }
+
+    private var spinTimer: Timer?
+
+    /// One full turn of the menu bar icon when a copy is saved.
+    private func spinIcon() {
+        guard !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion,
+              spinTimer == nil, let button = statusItem.button, let base = button.image else { return }
+        let frames = 24, duration = 0.5
+        var i = 0
+        spinTimer = Timer.scheduledTimer(withTimeInterval: duration / Double(frames), repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                i += 1
+                if i >= frames {
+                    button.image = base
+                    self?.spinTimer?.invalidate()
+                    self?.spinTimer = nil
+                } else {
+                    button.image = base.rotated(by: -360 * CGFloat(i) / CGFloat(frames))
+                }
+            }
+        }
+    }
 
     private func monitoringChanged() {
         statusItem.button?.alphaValue = settings.monitoring ? 1 : 0.45
@@ -76,5 +99,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                        self?.editHost.close()
                                    },
                                    onCancel: { [weak self] in self?.editHost.close() }))
+    }
+}
+
+private extension NSImage {
+    /// Copy rotated about its centre (degrees, negative = clockwise), same size, keeps template flag.
+    func rotated(by degrees: CGFloat) -> NSImage {
+        let img = NSImage(size: size, flipped: false) { rect in
+            let t = NSAffineTransform()
+            t.translateX(by: rect.midX, yBy: rect.midY)
+            t.rotate(byDegrees: degrees)
+            t.translateX(by: -rect.midX, yBy: -rect.midY)
+            t.concat()
+            self.draw(in: rect)
+            return true
+        }
+        img.isTemplate = isTemplate
+        return img
     }
 }

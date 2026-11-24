@@ -39,3 +39,4 @@ One line per decision: what, who decided, why. Status: **decided** or **proposed
 | 33 | 2026-11-24 | Clear all keeps pinned clips | Claude (user approved) | decided | Consistent with "pinned kept forever" (16) |
 | 34 | 2026-11-24 | No custom lists (no "+" button); only History and Pinned tabs | User | decided | User: "no need of custom list" |
 | 35 | 2026-11-24 | A pinned clip shows in **both** History (with 📌, normal position) and Pinned | User | decided | User chose B: History always shows everything copied |
+| 36 | 2026-11-24 | Menu bar icon spins one full turn (0.5 s) each time a copy is saved; skipped when "Reduce motion" is on | User | decided | User asked for a 360° animation on copy |
