@@ -48,7 +48,11 @@ public final class ClipStore: ObservableObject {
     public func touch(_ id: UUID) { mutate(id) { $0.lastCopiedAt = now() } }
 
     public func setPinned(_ id: UUID, _ pinned: Bool) {
-        mutate(id) { $0.pinned = pinned }
+        // An unpinned clip counts as just used, so the trim doesn't delete it on the spot.
+        mutate(id) { c in
+            c.pinned = pinned
+            if !pinned { c.lastCopiedAt = now() }
+        }
         if !pinned, trim() > 0 { save() }
     }
 
@@ -130,8 +134,8 @@ public final class ClipStore: ObservableObject {
     private func removeData(_ id: UUID) { try? fm.removeItem(at: dataDir(id)) }
 
     private func load() {
-        guard let raw = try? Data(contentsOf: indexURL) else { return }
-        if let decoded = try? JSONDecoder().decode([Clip].self, from: raw) {
+        guard fm.fileExists(atPath: indexURL.path) else { return }
+        if let raw = try? Data(contentsOf: indexURL), let decoded = try? JSONDecoder().decode([Clip].self, from: raw) {
             clips = decoded
         } else {
             // Keep the unreadable file for recovery instead of overwriting it on the next save.

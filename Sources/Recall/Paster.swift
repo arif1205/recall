@@ -7,6 +7,18 @@ final class Paster {
     enum Outcome { case pasted, copiedOnly, dataMissing }
 
     private var previousApp: NSRunningApplication?
+    private var observer: Any?
+
+    init() {
+        // Track the last other app the user switched to, so the detached window pastes there too.
+        observer = NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] n in
+            let app = n.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+            MainActor.assumeIsolated {
+                if let app, app.bundleIdentifier != Bundle.main.bundleIdentifier { self?.previousApp = app }
+            }
+        }
+    }
 
     /// Call just before showing the panel so paste can return to that app.
     func rememberFrontApp() {

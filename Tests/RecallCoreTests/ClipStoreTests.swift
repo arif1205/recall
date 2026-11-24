@@ -112,4 +112,21 @@ struct ClipStoreTests {
         #expect(s.clips.count == 10)
         #expect(s.list(.history, query: "").first?.preview == "n14")
     }
+
+    @Test func unpinAtLimitKeepsClip() {
+        let s = store()
+        s.historyLimit = 10
+        let old = s.add(draft("old"))
+        s.setPinned(old.id, true)
+        for i in 0..<10 { s.add(draft("n\(i)")) }
+        s.setPinned(old.id, false)
+        #expect(s.clips.contains { $0.id == old.id })
+    }
+
+    @Test func unreadableIndexIsNotOverwritten() throws {
+        try FileManager.default.createDirectory(at: dir.appendingPathComponent("index.json"), withIntermediateDirectories: true)
+        let s = store()
+        s.add(draft("new"))
+        #expect(FileManager.default.fileExists(atPath: dir.appendingPathComponent("index.json.corrupt").path))
+    }
 }

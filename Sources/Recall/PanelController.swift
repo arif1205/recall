@@ -115,7 +115,8 @@ final class PanelController: NSObject, NSWindowDelegate {
         case (126, []): model.moveSelection(-1)
         case (36, []), (76, []): model.paste(model.selected)
         case (36, .shift), (76, .shift): model.paste(model.selected, plain: true)
-        case (51, []) where model.query.isEmpty, (117, []) where model.query.isEmpty: model.delete(model.selected)
+        // Ignore key repeat: holding ⌫ to clear the search must not wipe clips one by one.
+        case (51, []) where model.query.isEmpty && !e.isARepeat, (117, []) where model.query.isEmpty && !e.isARepeat: model.delete(model.selected)
         default:
             guard mods == .command else { return false }
             switch key {
