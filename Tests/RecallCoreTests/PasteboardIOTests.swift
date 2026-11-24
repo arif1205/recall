@@ -32,6 +32,15 @@ struct PasteboardIOTests {
         #expect(PasteboardReader.read(pb, sourceBundleID: nil) == .concealed)
     }
 
+    @Test(arguments: ["com.agilebits.onepassword", "de.petermaurer.TransientPasteboardType", "net.antelle.keeweb"])
+    func legacyPasswordMarkersSkipped(_ marker: String) {
+        pb.clearContents()
+        pb.declareTypes([plain, .init(marker)], owner: nil)
+        pb.setString("secret", forType: plain)
+        pb.setString("", forType: .init(marker))
+        #expect(PasteboardReader.read(pb, sourceBundleID: nil) == .concealed)
+    }
+
     @Test func tooLarge() {
         pb.clearContents()
         pb.setData(Data(count: 26 * 1024 * 1024), forType: .png)
