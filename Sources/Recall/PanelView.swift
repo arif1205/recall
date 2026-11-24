@@ -92,9 +92,9 @@ struct PanelView: View {
             tabButton("Pinned", .pinned)
             Spacer()
             Picker("View", selection: Binding(get: { settings.viewMode }, set: { settings.viewMode = $0 })) {
+                Image(systemName: "rectangle.grid.1x2").help("Expanded").tag(ViewMode.expanded)
                 Image(systemName: "list.bullet").help("List").tag(ViewMode.list)
                 Image(systemName: "square.grid.2x2").help("Grid").tag(ViewMode.grid)
-                Image(systemName: "rectangle.grid.1x2").help("Expanded").tag(ViewMode.expanded)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
