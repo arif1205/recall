@@ -32,6 +32,13 @@ struct SettingsTests {
         #expect(again.shortcut.keyCode == 8)
     }
 
+    @Test func viewModeDefaultsToListAndPersists() {
+        let s = Settings(defaults: defaults)
+        #expect(s.viewMode == .list)
+        s.viewMode = .grid
+        #expect(Settings(defaults: defaults).viewMode == .grid)
+    }
+
     @Test func intervalMustBeAnOption() {
         let s = Settings(defaults: defaults)
         s.interval = 0.7

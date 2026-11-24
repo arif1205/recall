@@ -17,7 +17,7 @@ final class PanelController: NSObject, NSWindowDelegate {
 
     init(model: PanelModel) {
         self.model = model
-        panel = KeyablePanel(contentRect: NSRect(x: 0, y: 0, width: 360, height: 560),
+        panel = KeyablePanel(contentRect: NSRect(x: 0, y: 0, width: 380, height: 580),
                              styleMask: [.nonactivatingPanel, .titled, .fullSizeContentView],
                              backing: .buffered, defer: true)
         super.init()
@@ -45,6 +45,8 @@ final class PanelController: NSObject, NSWindowDelegate {
         model.willShow()
         if !model.detached { position() }
         panel.makeKeyAndOrderFront(nil)
+        // AppKit would otherwise make the search field first responder; the user wants no focus on open.
+        DispatchQueue.main.async { self.panel.makeFirstResponder(nil) }
         startKeys()
     }
 
@@ -107,19 +109,31 @@ final class PanelController: NSObject, NSWindowDelegate {
         keyMonitor = nil
     }
 
+    private var searchHasFocus: Bool { panel.firstResponder is NSTextView }
+
     private func handle(_ e: NSEvent) -> Bool {
         let mods = e.modifierFlags.intersection([.command, .shift, .option, .control])
         let key = e.charactersIgnoringModifiers?.lowercased()
         switch (e.keyCode, mods) {
         case (53, []): // Esc
             if model.detached { panel.performClose(nil) } else { hide() }
-        case (125, []): model.moveSelection(1)
-        case (126, []): model.moveSelection(-1)
+        case (125, []): model.moveSelection(model.rowStep)
+        case (126, []): model.moveSelection(-model.rowStep)
+        case (123, []) where model.settings.viewMode == .grid && !searchHasFocus: model.moveSelection(-1)
+        case (124, []) where model.settings.viewMode == .grid && !searchHasFocus: model.moveSelection(1)
         case (36, []), (76, []): model.paste(model.selected)
         case (36, .shift), (76, .shift): model.paste(model.selected, plain: true)
         // Ignore key repeat: holding ⌫ to clear the search must not wipe clips one by one.
         case (51, []) where model.query.isEmpty && !e.isARepeat, (117, []) where model.query.isEmpty && !e.isARepeat: model.delete(model.selected)
+        case (51, []) where !searchHasFocus && !model.query.isEmpty:
+            model.query.removeLast()
         default:
+            // Type-to-search without focusing the field: printable keys go straight into the query.
+            if !searchHasFocus, mods.isSubset(of: .shift), let ch = e.characters, !ch.isEmpty,
+               ch.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) && $0.value < 0xF700 }) {
+                model.query += ch
+                return true
+            }
             guard mods == .command else { return false }
             switch key {
             case "c" where (panel.firstResponder as? NSTextView)?.selectedRange().length ?? 0 == 0:

@@ -80,3 +80,84 @@ extension Color {
         self.init(.sRGB, red: r, green: g, blue: b, opacity: a)
     }
 }
+
+/// Card used by the Grid (compact) and Expanded (full-width, more detail) views.
+struct ClipCard: View {
+    let clip: Clip
+    let selected: Bool
+    let expanded: Bool
+    @ObservedObject var model: PanelModel
+
+    private static let timeFmt: DateFormatter = { let f = DateFormatter(); f.dateFormat = "HH:mm"; return f }()
+    private static let dateFmt: DateFormatter = { let f = DateFormatter(); f.dateFormat = "yyyy/M/d"; return f }()
+
+    private var stamp: String {
+        Calendar.current.isDateInToday(clip.lastCopiedAt)
+            ? Self.timeFmt.string(from: clip.lastCopiedAt) : Self.dateFmt.string(from: clip.lastCopiedAt)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                if expanded, let icon = model.appIcon(clip.sourceBundleID) {
+                    Image(nsImage: icon).resizable().frame(width: 18, height: 18)
+                }
+                if expanded {
+                    Text(clip.kind.label).font(.system(size: 11)).foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 0)
+                if clip.pinned { Image(systemName: "pin.fill").font(.system(size: 9)).foregroundStyle(.secondary) }
+                Text(stamp).font(.system(size: 11)).foregroundStyle(.secondary)
+            }
+            content
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(10)
+        .frame(height: expanded ? nil : 150, alignment: .top)
+        .frame(minHeight: expanded ? 70 : nil, alignment: .top)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(selected ? 0.16 : 0.07)))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color.accentColor : .clear, lineWidth: 2))
+        .contentShape(RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(clip.kind.label): \(clip.preview)")
+    }
+
+    @ViewBuilder private var content: some View {
+        switch clip.kind {
+        case .image:
+            if let img = model.thumbnail(clip) {
+                Image(nsImage: img).resizable().aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: expanded ? 180 : 100)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+            } else {
+                Label(clip.preview, systemImage: "photo").foregroundStyle(.secondary)
+            }
+        case .color:
+            let hex = Classifier.colorHex(clip.plainText ?? "") ?? "#888888"
+            VStack(alignment: .leading, spacing: 6) {
+                RoundedRectangle(cornerRadius: 6).fill(Color(hex: hex)).frame(height: expanded ? 48 : 60)
+                Text(clip.preview).font(.system(size: 12, design: .monospaced))
+            }
+        case .file:
+            HStack(spacing: 8) {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: clip.filePaths.first ?? "/")).resizable()
+                    .frame(width: expanded ? 40 : 32, height: expanded ? 40 : 32)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(clip.preview).lineLimit(2)
+                    if expanded, let path = clip.filePaths.first {
+                        Text((path as NSString).deletingLastPathComponent).font(.system(size: 11))
+                            .foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                    }
+                }
+            }
+        case .code, .markdown:
+            Text(clip.plainText ?? clip.preview)
+                .font(.system(size: 12, design: .monospaced))
+                .lineLimit(expanded ? 8 : 6)
+        default:
+            Text(clip.plainText ?? clip.preview)
+                .font(.system(size: 13))
+                .lineLimit(expanded ? 6 : 5)
+        }
+    }
+}

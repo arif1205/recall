@@ -1,5 +1,7 @@
 import Foundation
 
+public enum ViewMode: String, CaseIterable, Sendable { case list, grid, expanded }
+
 @MainActor
 public final class Settings: ObservableObject {
     public static let intervals: [Double] = [0.25, 0.5, 1, 2]
@@ -31,6 +33,11 @@ public final class Settings: ObservableObject {
                 ?? .defaultValue
         }
         set { objectWillChange.send(); defaults.set(try? JSONEncoder().encode(newValue), forKey: "recall.shortcut") }
+    }
+
+    public var viewMode: ViewMode {
+        get { defaults.string(forKey: "recall.viewMode").flatMap(ViewMode.init(rawValue:)) ?? .list }
+        set { objectWillChange.send(); defaults.set(newValue.rawValue, forKey: "recall.viewMode") }
     }
 
     public var firstLaunchDone: Bool {

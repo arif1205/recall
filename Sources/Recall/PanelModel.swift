@@ -22,6 +22,7 @@ final class PanelModel: ObservableObject {
     var onMonitoringChanged: () -> Void = {}
 
     private var thumbs: [UUID: NSImage] = [:]
+    private var appIcons: [String: NSImage] = [:]
 
     init(store: ClipStore, settings: Settings, paster: Paster) {
         self.store = store
@@ -86,6 +87,18 @@ final class PanelModel: ObservableObject {
         settings.monitoring.toggle()
         onMonitoringChanged()
     }
+
+    func appIcon(_ bundleID: String?) -> NSImage? {
+        guard let bundleID else { return nil }
+        if let i = appIcons[bundleID] { return i }
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return nil }
+        let icon = NSWorkspace.shared.icon(forFile: url.path)
+        appIcons[bundleID] = icon
+        return icon
+    }
+
+    /// Grid moves by row with ↑/↓ (two columns) and by item with ←/→.
+    var rowStep: Int { settings.viewMode == .grid ? 2 : 1 }
 
     func thumbnail(_ clip: Clip) -> NSImage? {
         if let t = thumbs[clip.id] { return t }

@@ -26,9 +26,8 @@ struct PanelView: View {
                 .font(.system(size: 12)).foregroundStyle(.secondary)
                 .frame(height: 32)
         }
-        .frame(width: 360, height: 560)
+        .frame(width: 380, height: 580)
         .background(.regularMaterial)
-        .onAppear { searchFocused = true }
     }
 
     private var header: some View {
@@ -92,6 +91,15 @@ struct PanelView: View {
             tabButton("History", .history)
             tabButton("Pinned", .pinned)
             Spacer()
+            Picker("View", selection: Binding(get: { settings.viewMode }, set: { settings.viewMode = $0 })) {
+                Image(systemName: "list.bullet").help("List").tag(ViewMode.list)
+                Image(systemName: "square.grid.2x2").help("Grid").tag(ViewMode.grid)
+                Image(systemName: "rectangle.grid.1x2").help("Expanded").tag(ViewMode.expanded)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .fixedSize()
+            .accessibilityLabel("View")
         }
         .padding(.horizontal, 12).padding(.bottom, 8)
     }
@@ -134,21 +142,43 @@ struct PanelView: View {
         let selectedID = model.selected?.id
         return ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(spacing: 2) {
-                    ForEach(clips) { clip in
-                        ClipRow(clip: clip, selected: clip.id == selectedID, showPin: model.tab == .history, model: model)
-                            .id(clip.id)
-                            .onTapGesture(count: 2) { model.paste(clip) }
-                            .onTapGesture { model.selection = clip.id }
-                            .contextMenu { contextMenu(clip) }
+                switch settings.viewMode {
+                case .list:
+                    LazyVStack(spacing: 2) {
+                        ForEach(clips) { clip in
+                            interactive(clip, ClipRow(clip: clip, selected: clip.id == selectedID,
+                                                      showPin: model.tab == .history, model: model))
+                        }
                     }
+                    .padding(6)
+                case .grid:
+                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
+                        ForEach(clips) { clip in
+                            interactive(clip, ClipCard(clip: clip, selected: clip.id == selectedID, expanded: false, model: model))
+                        }
+                    }
+                    .padding(10)
+                case .expanded:
+                    LazyVStack(spacing: 8) {
+                        ForEach(clips) { clip in
+                            interactive(clip, ClipCard(clip: clip, selected: clip.id == selectedID, expanded: true, model: model))
+                        }
+                    }
+                    .padding(10)
                 }
-                .padding(6)
             }
             .onChange(of: model.selection) { _, id in
                 if let id { proxy.scrollTo(id) }
             }
         }
+    }
+
+    private func interactive(_ clip: Clip, _ view: some View) -> some View {
+        view
+            .id(clip.id)
+            .onTapGesture(count: 2) { model.paste(clip) }
+            .onTapGesture { model.selection = clip.id }
+            .contextMenu { contextMenu(clip) }
     }
 
     @ViewBuilder private func contextMenu(_ clip: Clip) -> some View {
