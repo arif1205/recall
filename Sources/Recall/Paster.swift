@@ -30,8 +30,8 @@ final class Paster {
         PasteboardWriter.write(formats: formats, plainOnly: plain, to: .general)
         store.touch(clip.id)
         guard sendKeys else { return .copiedOnly }
-        guard hasAccessibility else { return .copiedOnly }
         previousApp?.activate()
+        guard hasAccessibility else { return .copiedOnly }
         // Give the target app a moment to become key before the keystroke arrives.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
             let src = CGEventSource(stateID: .combinedSessionState)
