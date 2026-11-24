@@ -16,8 +16,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settingsHost = WindowHost()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Recall")
+        // `-RecallDataDir <path>` runs on a separate history (used for README screenshots with sample clips).
+        let dir = UserDefaults.standard.string(forKey: "RecallDataDir").map { URL(fileURLWithPath: $0) }
+            ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent("Recall")
         store = ClipStore(directory: dir)
         store.historyLimit = settings.historyLimit
         watcher = ClipboardWatcher(store: store, settings: settings)
@@ -46,6 +48,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         hotkey.onPress = { [weak self] in self?.panel.toggle() }
         _ = hotkey.register(settings.shortcut)
+
+        if UserDefaults.standard.bool(forKey: "RecallShowPanel") { panel.show() }
 
         if !settings.firstLaunchDone {
             LoginItem.set(true) // #11: on by default
