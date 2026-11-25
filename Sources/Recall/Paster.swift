@@ -8,6 +8,7 @@ final class Paster {
 
     private var previousApp: NSRunningApplication?
     private var observer: Any?
+    var onWrote: () -> Void = {}
 
     init() {
         // Track the last other app the user switched to, so the detached window pastes there too.
@@ -40,6 +41,7 @@ final class Paster {
             return .dataMissing
         }
         PasteboardWriter.write(formats: formats, plainOnly: plain, to: .general)
+        onWrote()
         store.touch(clip.id)
         guard sendKeys else { return .copiedOnly }
         previousApp?.activate()

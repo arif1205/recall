@@ -34,6 +34,10 @@ public struct Clip: Codable, Identifiable, Equatable, Sendable {
     public var pinned: Bool
     public var lastCopiedAt: Date
     public var sourceBundleID: String?
+    /// List position: when the clip was first saved. Nil only in indexes written before #40; ClipStore backfills it on load.
+    public var addedAt: Date?
+
+    public var position: Date { addedAt ?? lastCopiedAt }
 }
 
 

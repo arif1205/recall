@@ -26,7 +26,7 @@ struct PanelView: View {
                 .font(.system(size: 12)).foregroundStyle(.secondary)
                 .frame(height: 32)
         }
-        .frame(width: 380, height: 580)
+        .frame(width: 380).frame(maxHeight: .infinity)
         .background(.regularMaterial)
     }
 
@@ -169,6 +169,9 @@ struct PanelView: View {
             }
             .onChange(of: model.selection) { _, id in
                 if let id { proxy.scrollTo(id) }
+            }
+            .onChange(of: model.openCount) {
+                if let id = model.selection { proxy.scrollTo(id, anchor: .center) }
             }
         }
     }

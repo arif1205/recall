@@ -272,3 +272,15 @@ Final code review: 3 important fixes applied (detached-window paste target, ⌫ 
 plus unreadable index no longer overwritten. Deferred minors: orphan data after index recovery, previous app not
 re-activated after Edit → Save, silent hotkey conflict at launch, no notice for missing files, duplicate content
 after edit, thumbnails decoded on main thread. User confirmed the menu bar icon is visible.
+
+## 2026-11-25 — Repeat copies keep their position
+
+User: copying a clip that is lower in the list jumped it to the top, which was the original design (#19).
+They no longer want that. The clip should stay where it is, be the latest copy, and be selected when
+⌘⇧V opens the panel. A copy of something new still goes on top and becomes the selection. Done as #40.
+
+## 2026-11-25 — ⌘C feedback
+
+User did not want the yellow "Copied — not pasted" notice after ⌘C in the panel. They asked for the
+card to get a briefly animated green outline instead of the blue accent. Done as #41.
+

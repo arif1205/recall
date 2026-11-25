@@ -31,6 +31,9 @@ final class ClipboardWatcher {
         timer = nil
     }
 
+    /// Recall's own clipboard writes aren't new copies; re-reading them rewrote the clip's label and source app.
+    func skipCurrentChange() { _ = tracker.shouldRead(pasteboard.changeCount) }
+
     func poll() {
         guard tracker.shouldRead(pasteboard.changeCount), settings.monitoring else { return }
         let source = NSWorkspace.shared.frontmostApplication?.bundleIdentifier

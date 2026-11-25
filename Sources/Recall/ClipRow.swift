@@ -7,6 +7,7 @@ struct ClipRow: View {
     let selected: Bool
     let showPin: Bool
     @ObservedObject var model: PanelModel
+    private var copied: Bool { model.copiedID == clip.id }
 
     private static let ago: RelativeDateTimeFormatter = {
         let f = RelativeDateTimeFormatter()
@@ -34,7 +35,7 @@ struct ClipRow: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
-        .background(RoundedRectangle(cornerRadius: 8).fill(selected ? Color.accentColor : .clear))
+        .background(RoundedRectangle(cornerRadius: 8).fill(copied ? Color.green : selected ? Color.accentColor : .clear))
         .contentShape(Rectangle())
     }
 
@@ -87,6 +88,7 @@ struct ClipCard: View {
     let selected: Bool
     let expanded: Bool
     @ObservedObject var model: PanelModel
+    private var copied: Bool { model.copiedID == clip.id }
 
     private static let timeFmt: DateFormatter = { let f = DateFormatter(); f.dateFormat = "HH:mm"; return f }()
     private static let dateFmt: DateFormatter = { let f = DateFormatter(); f.dateFormat = "yyyy/M/d"; return f }()
@@ -116,7 +118,7 @@ struct ClipCard: View {
         .frame(height: expanded ? nil : 150, alignment: .top)
         .frame(minHeight: expanded ? 70 : nil, alignment: .top)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(selected ? 0.16 : 0.07)))
-        .overlay(RoundedRectangle(cornerRadius: 12).stroke(selected ? Color.accentColor : .clear, lineWidth: 2))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(copied ? Color.green : selected ? Color.accentColor : .clear, lineWidth: 2))
         .contentShape(RoundedRectangle(cornerRadius: 12))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(clip.kind.label): \(clip.preview)")
@@ -161,3 +163,4 @@ struct ClipCard: View {
         }
     }
 }
+

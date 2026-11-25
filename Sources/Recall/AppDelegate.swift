@@ -24,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         store.historyLimit = settings.historyLimit
         watcher = ClipboardWatcher(store: store, settings: settings)
         watcher.start()
+        paster.onWrote = { [weak self] in self?.watcher.skipCurrentChange() }
 
         let model = PanelModel(store: store, settings: settings, paster: paster)
         panel = PanelController(model: model)

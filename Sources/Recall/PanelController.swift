@@ -15,9 +15,12 @@ final class PanelController: NSObject, NSWindowDelegate {
     /// Where the menu bar icon is, so a hotkey open lands under it too.
     var anchor: () -> NSRect? = { nil }
 
+    static let width: CGFloat = 380
+    static let preferredHeight: CGFloat = 760
+
     init(model: PanelModel) {
         self.model = model
-        panel = KeyablePanel(contentRect: NSRect(x: 0, y: 0, width: 380, height: 580),
+        panel = KeyablePanel(contentRect: NSRect(x: 0, y: 0, width: Self.width, height: Self.preferredHeight),
                              styleMask: [.nonactivatingPanel, .titled, .fullSizeContentView],
                              backing: .buffered, defer: true)
         super.init()
@@ -30,6 +33,7 @@ final class PanelController: NSObject, NSWindowDelegate {
         panel.delegate = self
         let host = NSHostingView(rootView: PanelView(model: model, store: model.store, settings: model.settings))
         host.safeAreaRegions = [] // the hidden title bar would otherwise leave an empty strip at the top
+        host.sizingOptions = [] // the panel sets its own size; don't let SwiftUI content resize it
         panel.contentView = host
         model.onClose = { [weak self] in self?.hide() }
         model.onDetachChanged = { [weak self] in self?.applyMode() }
@@ -74,6 +78,8 @@ final class PanelController: NSObject, NSWindowDelegate {
         let mouse = NSEvent.mouseLocation
         let screen = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
         guard let area = screen?.visibleFrame else { return }
+        // Tall by default, but never taller than the screen below the menu bar.
+        panel.setContentSize(NSSize(width: Self.width, height: min(Self.preferredHeight, area.height - 12)))
         let size = panel.frame.size
         // Icon on another display: use a right-side spot on this one instead.
         let iconX = anchor().flatMap { a in NSMouseInRect(NSPoint(x: a.midX, y: a.midY), screen!.frame, false) ? a.midX : nil }

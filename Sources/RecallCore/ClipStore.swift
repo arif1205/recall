@@ -38,7 +38,7 @@ public final class ClipStore: ObservableObject {
         let c = Clip(id: id, kind: d.kind, preview: Self.preview(for: d), plainText: d.plainText,
                      filePaths: d.fileURLs.map(\.path), formatTypes: writeData(d.formats, id: id),
                      contentHash: d.contentHash, pinned: false, lastCopiedAt: now(),
-                     sourceBundleID: d.sourceBundleID)
+                     sourceBundleID: d.sourceBundleID, addedAt: now())
         clips.append(c)
         trim()
         save()
@@ -87,7 +87,7 @@ public final class ClipStore: ObservableObject {
         return clips
             .filter { tab == .history || $0.pinned }
             .filter { q.isEmpty || Self.searchText($0).contains(q) }
-            .sorted { $0.lastCopiedAt > $1.lastCopiedAt }
+            .sorted { $0.position > $1.position }
     }
 
     public func data(for id: UUID) -> [String: Data]? {
@@ -137,6 +137,11 @@ public final class ClipStore: ObservableObject {
         guard fm.fileExists(atPath: indexURL.path) else { return }
         if let raw = try? Data(contentsOf: indexURL), let decoded = try? JSONDecoder().decode([Clip].self, from: raw) {
             clips = decoded
+            // Indexes from before #40 lack addedAt; freeze today's order so a re-copy can't move them.
+            if clips.contains(where: { $0.addedAt == nil }) {
+                for i in clips.indices where clips[i].addedAt == nil { clips[i].addedAt = clips[i].lastCopiedAt }
+                save()
+            }
         } else {
             // Keep the unreadable file for recovery instead of overwriting it on the next save.
             let bad = dir.appendingPathComponent("index.json.corrupt")

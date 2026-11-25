@@ -25,10 +25,26 @@ struct ClipStoreTests {
         #expect(s.list(.history, query: "").map(\.preview) == ["b", "a"])
     }
 
-    @Test func duplicateMovesToTop() {
+    @Test func duplicateKeepsPosition() {
         let s = store()
-        s.add(draft("a")); s.add(draft("b")); s.add(draft("a"))
-        #expect(s.list(.history, query: "").map(\.preview) == ["a", "b"])
+        let a = s.add(draft("a")); let b = s.add(draft("b")); let again = s.add(draft("a"))
+        #expect(again.id == a.id && again.lastCopiedAt > b.lastCopiedAt)
+        #expect(s.list(.history, query: "").map(\.preview) == ["b", "a"])
+        s.add(draft("c"))
+        #expect(s.list(.history, query: "").map(\.preview) == ["c", "b", "a"])
+    }
+
+    @Test func legacyClipsKeepPositionOnRecopy() throws {
+        let s = store()
+        s.add(draft("a")); s.add(draft("b"))
+        let url = dir.appendingPathComponent("index.json")
+        let legacy = try String(contentsOf: url, encoding: .utf8).replacingOccurrences(of: #","addedAt":-?[0-9.]+"#, with: "", options: .regularExpression)
+        try legacy.write(to: url, atomically: true, encoding: .utf8)
+        #expect(!legacy.contains("addedAt"))
+        let reloaded = store()
+        #expect(reloaded.list(.history, query: "").map(\.preview) == ["b", "a"])
+        reloaded.add(draft("a"))
+        #expect(reloaded.list(.history, query: "").map(\.preview) == ["b", "a"])
     }
 
     @Test func trimKeepsPinned() {

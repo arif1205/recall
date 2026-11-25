@@ -8,12 +8,17 @@ final class PanelModel: ObservableObject {
     let settings: Settings
     let paster: Paster
 
-    @Published var tab: Tab = .history { didSet { selection = visible.first?.id } }
-    @Published var query = "" { didSet { selection = visible.first?.id } }
-    @Published var selection: UUID?
+    // Only on a real change: the search field rewrites the same text when it loses focus on open.
+    @Published var tab: Tab = .history { didSet { if tab != oldValue { selection = visible.first?.id } } }
+    @Published var query = "" { didSet { if query != oldValue { selection = visible.first?.id } } }
+    @Published var selection: UUID? { didSet { if selection != copiedID { copiedID = nil } } }
     @Published var detached = false
     @Published var notice: String?
     @Published var needsAccessibility = false
+    /// Clip copied with ⌘C; its outline stays green until the selection moves (#41).
+    @Published private(set) var copiedID: UUID?
+    /// Bumped on each open so the list scrolls to the selection even when it didn't change.
+    @Published private(set) var openCount = 0
 
     var onClose: () -> Void = {}
     var onEdit: (Clip) -> Void = { _ in }
@@ -36,8 +41,11 @@ final class PanelModel: ObservableObject {
     func willShow() {
         query = ""
         notice = nil
+        copiedID = nil
         needsAccessibility = !paster.hasAccessibility
-        selection = visible.first?.id
+        // Clips keep their position when re-copied (#40), so the current clipboard may sit mid-list.
+        selection = visible.max { $0.lastCopiedAt < $1.lastCopiedAt }?.id
+        openCount += 1
     }
 
     func moveSelection(_ delta: Int) {
@@ -60,8 +68,14 @@ final class PanelModel: ObservableObject {
 
     func copyOnly(_ clip: Clip?) {
         guard let clip else { return }
-        notice = paster.paste(clip, plain: false, store: store, sendKeys: false) == .dataMissing
-            ? "Clip data missing — removed" : "Copied — not pasted"
+        guard paster.paste(clip, plain: false, store: store, sendKeys: false) != .dataMissing else {
+            notice = "Clip data missing — removed"
+            return
+        }
+        notice = nil
+        copiedID = clip.id
+        NSAccessibility.post(element: NSApp as Any, notification: .announcementRequested,
+                             userInfo: [.announcement: "Copied", .priority: NSAccessibilityPriorityLevel.high.rawValue])
     }
 
     func togglePin(_ clip: Clip?) {
