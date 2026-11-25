@@ -61,7 +61,7 @@ Click → panel opens under the icon; click again → closes. No Dock icon.
 
 ```
 ┌──────────────────────────────────────┐
-│ [📌]  [ 🔍 Type to Search...     ] ⚙ │
+│ [📌]  [ 🔍 Search  ⌘F            ] ⚙ │
 │  History   Pinned                    │
 ├──────────────────────────────────────┤
 │ 🔗   https://github.com/…            │  ← newest
@@ -86,11 +86,11 @@ Click → panel opens under the icon; click again → closes. No Dock icon.
 - Footer: item count of the current tab.
 
 ### 5.3 Keyboard in the panel
-- Typing goes to search; list filters as you type (#31) — matches clip text, file names and URLs,
+- **⌘F** or clicking the field starts search; typing elsewhere does nothing (#42). List filters as you type (#31) — matches clip text, file names and URLs,
   case-insensitive.
 - ↑ ↓ move selection; **Enter** pastes; **Shift + Enter** pastes as plain text;
-  **⌘C** copies without pasting (outline turns green, #41); **⌘E** edit; **⌘P** pin/unpin; **Delete** deletes;
-  **Esc** or the shortcut again closes (#22, #24, #28).
+  **⌘C** copies without pasting (outline turns green, #41); **⌘E** edit; **⌘P** pin/unpin; **Space** Quick Look (#43); **Delete** deletes;
+  **Esc** leaves search if it is active (#42), otherwise it or the shortcut again closes (#22, #24, #28).
 
 ### 5.4 Right-click menu on a clip (#22)
 ```

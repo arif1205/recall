@@ -284,3 +284,13 @@ They no longer want that. The clip should stay where it is, be the latest copy, 
 User did not want the yellow "Copied — not pasted" notice after ⌘C in the panel. They asked for the
 card to get a briefly animated green outline instead of the blue accent. Done as #41.
 
+## 2026-11-25 — Explicit search
+
+User did not want typing in the open panel to go straight into search. Search should start only when
+triggered. Done as #42: ⌘F or clicking the field; Esc leaves search.
+
+## 2026-11-25 — Quick Look
+
+User asked for Space on a selected clip to open Quick Look, like Finder. Done as #43 with the system
+QLPreviewPanel; non-file clips go through a temp file that is deleted again.
+

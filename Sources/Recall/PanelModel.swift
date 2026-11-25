@@ -19,6 +19,8 @@ final class PanelModel: ObservableObject {
     @Published private(set) var copiedID: UUID?
     /// Bumped on each open so the list scrolls to the selection even when it didn't change.
     @Published private(set) var openCount = 0
+    /// Bumped by ⌘F; the view focuses the search field.
+    @Published var searchRequests = 0
 
     var onClose: () -> Void = {}
     var onEdit: (Clip) -> Void = { _ in }

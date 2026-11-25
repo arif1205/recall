@@ -41,9 +41,10 @@ struct PanelView: View {
 
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                TextField("Type to Search...", text: $model.query)
+                TextField("Search  ⌘F", text: $model.query)
                     .textFieldStyle(.plain)
                     .focused($searchFocused)
+                    .onChange(of: model.searchRequests) { searchFocused = true }
             }
             .padding(.horizontal, 8).padding(.vertical, 5)
             .background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.25)))
